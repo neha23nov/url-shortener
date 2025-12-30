@@ -1,7 +1,10 @@
 const express=require("express");
 const { connectToMongoDB}=require("./connect");
 const URL=require("./models/url");
+const cookieParser=require('cookie-parser')
 const staticRoute=require("./routes/staticRouter");
+const {restrictToLoggedinUsersOnly,checkAuth}=require('./middlewares/auth')
+const userRoute=require("./routes/user");
 const path=require("path");
 
 
@@ -18,12 +21,15 @@ connectToMongoDB('mongodb://localhost:27017/urlShortnerDB')
 
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
+app.use(cookieParser());
+
+app.use("/user",userRoute);
  
 
 
 
-app.use("/url",urlRoute);
-app.use("/",staticRoute);
+app.use("/url",restrictToLoggedinUsersOnly,urlRoute);
+app.use("/",checkAuth,staticRoute);
 
 app.get('/:shortId',async(req,res)=>{
     const shortId=req.params.shortId;
