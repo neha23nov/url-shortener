@@ -3,7 +3,8 @@ const { connectToMongoDB}=require("./connect");
 const URL=require("./models/url");
 const cookieParser=require('cookie-parser')
 const staticRoute=require("./routes/staticRouter");
-const {restrictToLoggedinUsersOnly,checkAuth}=require('./middlewares/auth')
+// const {restrictToLoggedinUsersOnly,checkAuth}=require('./middlewares/auth')
+const{checkForAuthentication,restrictTo}=require('./middlewares/auth')
 const userRoute=require("./routes/user");
 const path=require("path");
 
@@ -24,12 +25,15 @@ app.use(express.urlencoded({extended:false}));
 app.use(cookieParser());
 
 app.use("/user",userRoute);
- 
+app.use(checkForAuthentication);
+
+app.use("/url",restrictTo(["Normal"]),urlRoute);
+ app.use("/",staticRoute);
 
 
 
-app.use("/url",restrictToLoggedinUsersOnly,urlRoute);
-app.use("/",checkAuth,staticRoute);
+// app.use("/url",restrictToLoggedinUsersOnly,urlRoute);
+// app.use("/",checkAuth,staticRoute);
 
 app.get('/:shortId',async(req,res)=>{
     const shortId=req.params.shortId;
